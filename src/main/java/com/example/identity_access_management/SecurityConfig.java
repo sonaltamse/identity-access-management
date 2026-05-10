@@ -1,7 +1,9 @@
 package com.example.identity_access_management;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -10,35 +12,61 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Autowired
+    DataSource dataSource;
+
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/public/**").permitAll()
+
+        http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
         );
+
         http.sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         http.headers(headers ->
                 headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
         http.csrf(csrf -> csrf.disable());
-        http.httpBasic(withDefaults());
+        http.httpBasic(Customizer.withDefaults());
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails developer = User.withUsername("developer").password("{noop}pwd@123").roles("DEVELOPER").build();
-        UserDetails admin = User.withUsername("admin").password("{noop}pwd@555").roles("DEVELOPER", "ADMIN").build();
-        return new InMemoryUserDetailsManager(developer,admin);
+
+        UserDetails developer = User.withUsername("developer")
+                .password("{noop}pwd@123")
+                .roles("DEVELOPER")
+                .build();
+
+        UserDetails admin = User.withUsername("admin")
+                .password("{noop}pwd@555")
+                .roles("DEVELOPER", "ADMIN")
+                .build();
+
+        JdbcUserDetailsManager userDetailsManager =
+                new JdbcUserDetailsManager(dataSource);
+
+        if (!userDetailsManager.userExists("developer")) {
+            userDetailsManager.createUser(developer);
+        }
+
+        if (!userDetailsManager.userExists("admin")) {
+            userDetailsManager.createUser(admin);
+        }
+
+        return userDetailsManager;
     }
 }
