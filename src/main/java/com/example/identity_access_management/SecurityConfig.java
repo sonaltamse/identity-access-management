@@ -2,6 +2,7 @@ package com.example.identity_access_management;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +16,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -27,8 +29,8 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails developer = User.withUsername("developer").password("{noop}pwd@123").roles("USER").build();
-        UserDetails admin = User.withUsername("admin").password("{noop}pwd@555").roles("USER", "ADMIN").build();
+        UserDetails developer = User.withUsername("developer").password("{noop}pwd@123").roles("DEVELOPER").build();
+        UserDetails admin = User.withUsername("admin").password("{noop}pwd@555").roles("DEVELOPER", "ADMIN").build();
         return new InMemoryUserDetailsManager(developer,admin);
     }
 }
