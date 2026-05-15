@@ -1,4 +1,4 @@
-package jwt;
+package com.example.identity_access_management.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

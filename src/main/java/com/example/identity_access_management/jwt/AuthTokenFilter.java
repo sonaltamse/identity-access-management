@@ -1,4 +1,4 @@
-package jwt;
+package com.example.identity_access_management.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

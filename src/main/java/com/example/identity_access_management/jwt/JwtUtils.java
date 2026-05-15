@@ -1,4 +1,4 @@
-package jwt;
+package com.example.identity_access_management.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

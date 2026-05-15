@@ -1,4 +1,4 @@
-package jwt;
+package com.example.identity_access_management.jwt;
 import java.util.List;
 public class LoginResponse {
     private String token;
