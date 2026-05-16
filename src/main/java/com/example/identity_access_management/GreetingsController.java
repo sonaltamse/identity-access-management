@@ -57,7 +57,7 @@ public class GreetingsController {
         try{
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUserName(),
+                            loginRequest.getusername(),
                             loginRequest.getPassword()
                     )
             );

@@ -5,9 +5,8 @@ import com.example.identity_access_management.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -65,30 +64,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
+    public UserDetailsService userDetailsService(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+    @Bean
+    public CommandLineRunner initData(UserDetailsService userDetailsService) {
+        return args -> {
+            JdbcUserDetailsManager manager = (JdbcUserDetailsManager) userDetailsService;
+            UserDetails user1 = User.withUsername("developer")
+                    .password(passwordEncoder().encode("pwd@123"))
+                    .roles("DEVELOPER")
+                    .build();
+            UserDetails admin = User.withUsername("admin")
+                    //.password(passwordEncoder().encode("adminPass"))
+                    .password(passwordEncoder().encode("adm@123"))
+                    .roles("ADMIN")
+                    .build();
 
-        UserDetails developer = User.withUsername("developer")
-                .password(passwordEncoder().encode("pwd@123"))
-                .roles("DEVELOPER")
-                .build();
-
-        UserDetails admin = User.withUsername("admin")
-                .password(passwordEncoder().encode("pwd@555"))
-                .roles("DEVELOPER", "ADMIN")
-                .build();
-
-        JdbcUserDetailsManager userDetailsManager =
-                new JdbcUserDetailsManager(dataSource);
-
-        if (!userDetailsManager.userExists("developer")) {
-            userDetailsManager.createUser(developer);
-        }
-
-        if (!userDetailsManager.userExists("admin")) {
+            JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
+            userDetailsManager.createUser(user1);
             userDetailsManager.createUser(admin);
-        }
-
-        return userDetailsManager;
+        };
     }
 
     @Bean
